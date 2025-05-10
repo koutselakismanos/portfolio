@@ -1,0 +1,26 @@
+---
+// src/components/Footer.astro
+const yourName = "[Your Name]"; // Placeholder
+---
+
+<footer class="site-footer">
+    <div class="container">
+        <p>
+            &copy; <span id="currentYear"></span>
+            {yourName}. All rights reserved.
+        </p>
+    </div>
+</footer>
+
+<script>
+    // Set current year
+    const currentYearSpan = document.getElementById("currentYear");
+    if (currentYearSpan) {
+        currentYearSpan.textContent = new Date().getFullYear().toString();
+    }
+</script>
+
+<style>
+    /* .site-footer styles are in global.css */
+    /* Add any specific styles for Footer.astro if they deviate or are unique */
+</style>

@@ -1,0 +1,56 @@
+---
+// src/components/ProjectCard.astro
+export interface Props {
+    title: string;
+    date: string;
+    description: string;
+    imageSrc: string;
+    imageBlurSrc: string;
+    link: string;
+    techPills: string[];
+    animationOrder?: number;
+}
+
+const {
+    title,
+    date,
+    description,
+    imageSrc,
+    imageBlurSrc,
+    link,
+    techPills,
+    animationOrder = 0,
+} = Astro.props;
+---
+
+<div class="project-card" style={`--animation-order-child: ${animationOrder};`}>
+    <div class="project-card-image-wrapper">
+        <img
+            loading="lazy"
+            src={imageBlurSrc}
+            alt={`Blurred background for ${title}`}
+            class="project-card-image-blur"
+        />
+        <img
+            loading="lazy"
+            src={imageSrc}
+            alt={`${title} Image`}
+            class="project-card-image-main"
+        />
+    </div>
+    <div class="project-card-content">
+        <h3>
+            <a href={link} target="_blank" rel="noopener noreferrer">{title}</a>
+        </h3>
+        <div class="project-date">{date}</div>
+        <p class="project-description">{description}</p>
+        <div class="tech-pills">
+            {techPills.map((pill) => <span class="tech-pill">{pill}</span>)}
+        </div>
+    </div>
+</div>
+
+<style>
+    /* .project-card styles and sub-elements are in global.css */
+    /* Add any specific styles for ProjectCard.astro if they deviate or are unique */
+</style>

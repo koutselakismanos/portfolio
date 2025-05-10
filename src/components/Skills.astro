@@ -1,0 +1,32 @@
+---
+// src/components/Skills.astro
+import { skillsData } from "../data/skills.js";
+import SkillItem from "./SkillItem.astro"; // We'll create this next
+---
+
+<section id="skills" class="content-section">
+    <div class="container">
+        <h2 class="animated-on-scroll">Core Competencies</h2>
+        <p class="animated-on-scroll">
+            I leverage a diverse toolkit to build efficient, scalable, and
+            innovative IoT solutions and software applications.
+        </p>
+        <div class="skills-grid stagger-children">
+            {
+                skillsData.map((skill, index) => (
+                    <SkillItem
+                        icon={skill.icon}
+                        title={skill.title}
+                        description={skill.description}
+                        animationOrder={index}
+                    />
+                ))
+            }
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Styles for .skills-grid and individual .skill-item are in global.css */
+    /* Add any section-specific styles for #skills if needed */
+</style>

@@ -1,0 +1,22 @@
+---
+// src/components/SkillItem.astro
+export interface Props {
+    icon: string;
+    title: string;
+    description: string;
+    animationOrder?: number; // For stagger animation
+}
+
+const { icon, title, description, animationOrder = 0 } = Astro.props;
+---
+
+<div class="skill-item" style={`--animation-order-child: ${animationOrder};`}>
+    <span class="material-symbols-rounded">{icon}</span>
+    <h3>{title}</h3>
+    <p>{description}</p>
+</div>
+
+<style>
+    /* .skill-item styles are in global.css */
+    /* Add any specific styles for SkillItem.astro if they deviate or are unique */
+</style>

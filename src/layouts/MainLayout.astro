@@ -1,0 +1,84 @@
+---
+// src/layouts/MainLayout.astro
+import "../styles/global.css"; // Import global styles
+import CustomCursor from "../components/CustomCursor.astro"; // Import CustomCursor component
+
+// Props for the layout, e.g., title
+export interface Props {
+    title: string;
+    description?: string;
+}
+
+const {
+    title,
+    description = "Your Name - Software Developer | IoT Specialist",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+            rel="stylesheet"
+        />
+
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "https://unpkg.com/three@0.163.0/build/three.module.js",
+                    "three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/"
+                }
+            }
+        </script>
+
+        {/* Slot for additional head elements if needed */}
+        <slot name="head" />
+    </head>
+    <body>
+        <div class="page-wrapper">
+            <slot />
+            {/* Default slot for main page content */}
+        </div>
+        <CustomCursor />
+        {/* Add CustomCursor component here */}
+        {/* Slot for scripts at the end of the body */}
+        <slot name="body-end" />
+
+        <script>
+            import { initNavHighlighter } from "../scripts/navHighlighter.js";
+            import { initScrollAnimations } from "../scripts/scrollAnimations.js";
+            import { initCustomCursor } from "../scripts/customCursor.js";
+
+            function initializeScripts() {
+                initNavHighlighter();
+                initScrollAnimations();
+                initCustomCursor();
+            }
+
+            // Ensure DOM is ready before initializing
+            if (document.readyState === "loading") {
+                document.addEventListener(
+                    "DOMContentLoaded",
+                    initializeScripts,
+                );
+            } else {
+                initializeScripts();
+            }
+        </script>
+    </body>
+</html>

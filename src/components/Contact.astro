@@ -1,0 +1,68 @@
+---
+// src/components/Contact.astro
+interface ContactLink {
+    href: string;
+    icon: string;
+    text: string;
+    target: "_self" | "_blank";
+}
+
+const contactLinks: ContactLink[] = [
+    {
+        href: "mailto:youremail@example.com",
+        icon: "outgoing_mail",
+        text: "Email Me",
+        target: "_self",
+    },
+    {
+        href: "https://github.com/yourusername",
+        icon: "code_blocks",
+        text: "GitHub",
+        target: "_blank",
+    },
+    {
+        href: "https://linkedin.com/in/yourusername",
+        icon: "corporate_fare",
+        text: "LinkedIn",
+        target: "_blank",
+    },
+];
+---
+
+<section id="contact" class="content-section">
+    <div class="container stagger-children">
+        <h2>Let's Build Something Together</h2>
+        <p>
+            I'm passionate about leveraging technology to solve real-world
+            problems and am always open to discussing new IoT ventures, software
+            development roles, or collaborative side projects. If you have an
+            idea or opportunity you'd like to explore, please don't hesitate to
+            reach out.
+        </p>
+        <div class="contact-methods">
+            {
+                contactLinks.map((link) => (
+                    <a
+                        href={link.href}
+                        target={link.target}
+                        rel={
+                            link.target === "_blank"
+                                ? "noopener noreferrer"
+                                : undefined
+                        }
+                    >
+                        <span class="material-symbols-rounded">
+                            {link.icon}
+                        </span>{" "}
+                        {link.text}
+                    </a>
+                ))
+            }
+        </div>
+    </div>
+</section>
+
+<style>
+    /* .contact-methods styles are in global.css */
+    /* Add any section-specific styles for #contact if needed */
+</style>

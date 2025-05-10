@@ -1,0 +1,35 @@
+---
+// src/components/Hero.astro
+// Placeholder for name, can be made a prop or come from a global data store
+const yourName = "[Your Name]";
+---
+
+<section id="about" class="hero-section content-section">
+    <div class="container stagger-children">
+        <h1>Hi, I'm {yourName}</h1>
+        <p class="subtitle">
+            A Software Developer forging the future with IoT solutions and
+            innovative side projects. I thrive on creating intelligent systems
+            that bridge the physical and digital realms.
+        </p>
+        <p>
+            My passion lies in architecting and developing robust, scalable
+            software for the Internet of Things. From crafting firmware for
+            microcontrollers like ESP32 and Raspberry Pi, to integrating with
+            cloud platforms (AWS, Azure, Google Cloud IoT) and building
+            insightful data visualizations, I enjoy working across the entire
+            IoT ecosystem. I'm driven by complex challenges and the opportunity
+            to transform conceptual ideas into tangible, impactful technology.
+        </p>
+        <div class="hero-actions">
+            <a href="#projects" class="button-primary">View My Work</a>
+            <a href="#contact" class="button-secondary">Get In Touch</a>
+        </div>
+    </div>
+</section>
+
+<!-- Scoped CSS for Hero.astro can be added here if needed -->
+<!-- Most styles are currently global in src/styles/global.css -->
+<style>
+    /* Add any hero-specific styles here if they are not covered by global.css */
+</style>

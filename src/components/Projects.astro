@@ -1,0 +1,36 @@
+---
+// src/components/Projects.astro
+import { projectsData } from "../data/projects.js";
+import ProjectCard from "./ProjectCard.astro"; // We'll create this next
+---
+
+<section id="projects" class="content-section">
+    <div class="container">
+        <h2 class="animated-on-scroll">Featured Projects & Endeavors</h2>
+        <p class="animated-on-scroll">
+            A selection of projects that demonstrate my skills in IoT, software
+            development, and hardware design.
+        </p>
+        <div class="projects-grid stagger-children">
+            {
+                projectsData.map((project, index) => (
+                    <ProjectCard
+                        title={project.title}
+                        date={project.date}
+                        description={project.description}
+                        imageSrc={project.imageSrc}
+                        imageBlurSrc={project.imageBlurSrc}
+                        link={project.link}
+                        techPills={project.techPills}
+                        animationOrder={index}
+                    />
+                ))
+            }
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Styles for .projects-grid and .project-card are in global.css */
+    /* Add any section-specific styles for #projects if needed */
+</style>

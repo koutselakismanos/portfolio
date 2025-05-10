@@ -1,0 +1,62 @@
+---
+// src/components/Header.astro
+const navLinks = [
+    { href: "#about", text: "About", active: true }, // 'active' class will be managed by client-side JS later
+    { href: "#pcb-3d-showcase", text: "3D PCB Showcase" },
+    { href: "#skills", text: "Skills" },
+    { href: "#projects", text: "Projects" },
+    { href: "#contact", text: "Contact" },
+];
+
+// Placeholder for site name, can be made a prop
+const siteName = "YOURNAME";
+---
+
+<header class="site-header">
+    <div class="container site-header-inner">
+        <div class="site-logo">
+            <a href="/">{siteName}<span class="tm">™</span></a>
+            {/* Changed href to "/" for home */}
+        </div>
+        <div class="header-actions">
+            <nav class="site-nav">
+                <ul>
+                    {
+                        navLinks.map((link) => (
+                            <li>
+                                <a
+                                    href={link.href}
+                                    class={link.active ? "active" : ""}
+                                >
+                                    {link.text}
+                                </a>
+                            </li>
+                        ))
+                    }
+                </ul>
+            </nav>
+            <div class="settings-button-wrapper">
+                <!-- Settings button can be styled with display:none if completely unused -->
+                <button
+                    class="settings-button"
+                    aria-label="Preferences"
+                    title="Preferences"
+                    style="display: none;"
+                >
+                    <span class="material-symbols-rounded">settings</span>
+                </button>
+                <div class="theme-menu">
+                    <!-- Menu is empty as theme/grid toggles are removed -->
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Scoped CSS for Header.astro can be added here if needed -->
+<!-- Most styles are currently global in src/styles/global.css -->
+<style>
+    /* Add any header-specific styles here if they are not covered by global.css */
+    /* For example, if .site-header needed unique Astro-component-scoped styles: */
+    /* .site-header { ... } */
+</style>
