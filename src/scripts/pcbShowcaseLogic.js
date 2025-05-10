@@ -7,17 +7,28 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 // Get pcbModelsData from the data attribute on the section element
 const pcbShowcaseSection = document.getElementById('pcb-3d-showcase');
 let pcbModelsData = [];
-if (pcbShowcaseSection && pcbShowcaseSection.dataset.pcbModels) {
-    try {
-        pcbModelsData = JSON.parse(pcbShowcaseSection.dataset.pcbModels);
-        console.log('[Astro Client] pcbModelsData loaded from data attribute:', pcbModelsData);
-    } catch (e) {
-        console.error('[Astro Client] Error parsing pcbModelsData from data attribute:', e);
-    }
-} else {
-    console.warn('[Astro Client] pcbModelsData data attribute not found or empty on #pcb-3d-showcase section.');
-}
 
+function tryLoadPcbModelsData() {
+    if (pcbShowcaseSection && pcbShowcaseSection.dataset.pcbModels) {
+        try {
+            const rawData = pcbShowcaseSection.dataset.pcbModels;
+            if (rawData && rawData.trim() !== "") {
+                pcbModelsData = JSON.parse(rawData);
+                console.log('[Astro Client] pcbModelsData loaded from data attribute:', pcbModelsData);
+                return true;
+            } else {
+                console.warn('[Astro Client] pcbModelsData data attribute is present but empty.');
+                return false;
+            }
+        } catch (e) {
+            console.error('[Astro Client] Error parsing pcbModelsData from data attribute:', e);
+            return false;
+        }
+    } else {
+        console.warn('[Astro Client] pcbModelsData data attribute not found on #pcb-3d-showcase section.');
+        return false;
+    }
+}
 
 // --- Global State & Config ---
 let threeScene, camera, renderer, controls, raycaster, mouse;
@@ -48,7 +59,8 @@ const fresnelVertexShader = `
   }
 `;
 const fresnelFragmentShader = `
-  uniform vec3 uColor;
+  uniform vec3 uColor; // Accent color for the glow
+  uniform vec3 uPcbBaseColor; // Base color for the PCB itself
   uniform float uFresnelBias;
   uniform float uFresnelScale;
   uniform float uFresnelPower;
@@ -60,10 +72,10 @@ const fresnelFragmentShader = `
     float fresnelTerm = 1.0 - dot(normal, viewDir);
     fresnelTerm = pow(fresnelTerm, uFresnelPower);
     float fresnel = uFresnelBias + uFresnelScale * fresnelTerm;
-    vec3 baseColor = uColor * 0.5;
-    vec3 fresnelColor = uColor * fresnel;
-    vec3 emissive = fresnelColor * 0.8;
-    gl_FragColor = vec4(baseColor + emissive, 1.0);
+    vec3 baseColor = uPcbBaseColor; // Use the dedicated PCB base color
+    vec3 fresnelColor = uColor * fresnel; // Glow is based on the accent color
+    vec3 emissive = fresnelColor * 0.8; // Keep emissive strength, can be tuned
+    gl_FragColor = vec4(baseColor + emissive, 1.0); // Add emissive glow to base color
   }
 `;
 
@@ -108,11 +120,10 @@ function initThreeJS() {
         return;
     }
     if (!pcbModelsData || pcbModelsData.length === 0) {
-        console.warn("initThreeJS: pcbModelsData is not available or empty. Cannot load initial model.");
-        if (loadingIndicator) loadingIndicator.textContent = "Model data not found.";
-        return;
+        console.error("initThreeJS: CRITICAL - pcbModelsData is not available or empty. Cannot load initial model. This should have been caught by pre-init checks.");
+        if (loadingIndicator) loadingIndicator.textContent = "Critical: Model data missing.";
+        return; // Stop initialization if data is missing, though polling should prevent this.
     }
-
 
     threeScene = new THREE.Scene();
     raycaster = new THREE.Raycaster();
@@ -128,15 +139,15 @@ function initThreeJS() {
     renderer.setPixelRatio(window.devicePixelRatio);
     pcbContainer.appendChild(renderer.domElement);
 
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x888888, 100.25); // Reduced intensity
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x888888, 1.325); // Further reduced intensity
     threeScene.add(hemiLight);
-    const ambientLight = new THREE.AmbientLight(0xffffff, 100.4); // Reduced intensity
-    threeScene.add(ambientLight);
-    const dirLight1 = new THREE.DirectionalLight(0xffffff, 100.5); // Reduced intensity
-    dirLight1.position.set(8, 12, 8);
-    threeScene.add(dirLight1);
+    // const ambientLight = new THREE.AmbientLight(0xffffff, 0.2); // Further reduced intensity
+    // threeScene.add(ambientLight);
+    // const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.25); // Further reduced intensity
+    // dirLight1.position.set(8, 12, 8);
+    // threeScene.add(dirLight1);
 
-    dynamicPointLight = new THREE.PointLight(0xffccaa, 0.3, 150, 100.5); // Reduced intensity
+    dynamicPointLight = new THREE.PointLight(0xffccaa, 0.15, 150, 1.5); // Further reduced intensity
     dynamicPointLight.position.set(0, 2, 5);
     threeScene.add(dynamicPointLight);
 
@@ -159,22 +170,28 @@ function initThreeJS() {
                         .trim() || "#58A6FF",
                 ),
             },
-            uFresnelBias: { value: 0.05 },
-            uFresnelScale: { value: 0.9 },
+            uPcbBaseColor: { value: new THREE.Color(0x004d40) }, // Dark teal as a starting PCB color
+            uFresnelBias: { value: 0.03 },
+            uFresnelScale: { value: 1.3 },
             uFresnelPower: { value: 3.0 },
         },
         vertexShader: fresnelVertexShader,
         fragmentShader: fresnelFragmentShader,
+        side: THREE.DoubleSide,
     });
 
-    // if (pcbModelsData && pcbModelsData.length > 0) {
-    //     loadPCBModel(pcbModelsData[0]);
-    // } else {
-    //     console.warn("No PCB models defined in client script for initial load.");
-    //     if (loadingIndicator)
-    //         loadingIndicator.textContent = "No models available.";
-    // }
-    console.log("[Debug] GLB model loading temporarily disabled for test cube visibility check.");
+    if (pcbModelsData && pcbModelsData.length > 0) {
+        console.log("[Astro Client] initThreeJS: Attempting to load initial model:", pcbModelsData[0]);
+        loadPCBModel(pcbModelsData[0]);
+    } else {
+        // This case should ideally not be reached if pre-init checks are effective
+        console.warn("[Astro Client] initThreeJS: No PCB models available to load initially, though pcbModelsData might exist but be empty.");
+        if (loadingIndicator) {
+            loadingIndicator.textContent = "No models available for display.";
+            loadingIndicator.style.display = "block";
+        }
+    }
+    // console.log("[Debug] GLB model loading temporarily disabled for test cube visibility check."); // Keep for now if still debugging other parts
 
     renderer.domElement.addEventListener(
         "pointermove",
@@ -292,8 +309,7 @@ function loadPCBModel(modelData) {
         camera.position.set(0, 1, 5);
         controls.target.set(0, 0, 0);
         controls.update();
-        if (controls.autoRotate && prefersReducedMotion)
-            controls.autoRotate = false;
+        controls.autoRotate = !prefersReducedMotion; // Explicitly set based on preference
         if (loadingIndicator) loadingIndicator.style.display = "none";
         console.log(`Placeholder ${modelData.name || modelKey} loaded.`);
     } else {
@@ -331,13 +347,16 @@ function loadPCBModel(modelData) {
                                 child.geometry.computeVertexNormals();
                                 console.log(`[Debug] Mesh: ${child.name}, Normal Attribute AFTER COMPUTE:`, child.geometry.attributes.normal);
                             }
-                            if (DEBUG_MATERIAL && !USE_PLACEHOLDER_PRIMITIVES) { // Only apply debug material to actual GLBs
-                                console.log("[Debug] Using MeshStandardMaterial for GLB model");
+                            if (DEBUG_MATERIAL && !USE_PLACEHOLDER_PRIMITIVES) {
+                                console.log("[Debug] Using DEBUG MeshStandardMaterial for GLB model");
                                 child.material = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x222222, metalness: 0.1, roughness: 0.7, wireframe: false, side: THREE.DoubleSide });
-                            } else {
+                            } else if (!USE_PLACEHOLDER_PRIMITIVES) { // Not debug, not placeholder: APPLY CUSTOM pcbMaterial
+                                console.log(`[Debug] Applying custom pcbMaterial to GLB mesh: ${child.name}`);
                                 child.material = pcbMaterial;
+                            } else { // This case is for USE_PLACEHOLDER_PRIMITIVES = true
+                                child.material = pcbMaterial; // Placeholders also get the Fresnel
                             }
-                            console.log(`[Debug] Material for ${child.name}:`, child.material);
+                            console.log(`[Debug] Final material for ${child.name}:`, child.material);
                         }
                     }
                 });
@@ -353,7 +372,7 @@ function loadPCBModel(modelData) {
                 cameraZ = Math.max(cameraZ, controls.minDistance * 2);
                 camera.position.set(
                     center.x,
-                    center.y + size.y * 0.2,
+                    center.y + size.y * 0.7, // Increased Y offset for a more top-down view
                     center.z + cameraZ,
                 );
                 controls.target.copy(center);
@@ -369,8 +388,7 @@ function loadPCBModel(modelData) {
                 camera.lookAt(loadedCenter); // Explicitly point camera
                 controls.update(); // Update controls again after lookAt
 
-                if (controls.autoRotate && prefersReducedMotion)
-                    controls.autoRotate = false;
+                controls.autoRotate = !prefersReducedMotion; // Explicitly set based on preference
                 if (loadingIndicator)
                     loadingIndicator.style.display = "none";
             },
@@ -652,16 +670,53 @@ function setupThumbnailControls() {
 // Given Astro's processing of <script src="...">, it's typically placed at the end of <body> or handled by Astro.
 // For safety, let's wrap in DOMContentLoaded.
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        initThreeJS();
-        populateThumbnails();
-        setupThumbnailControls();
-        updateScrollArrows();
-    });
-} else {
+function mainInit() {
+    console.log('[Astro Client] mainInit called.');
     initThreeJS();
     populateThumbnails();
     setupThumbnailControls();
-    updateScrollArrows();
+    updateScrollArrows(); // Initial call after thumbnails are populated
+}
+
+function attemptDataLoadAndInit() {
+    console.log('[Astro Client] attemptDataLoadAndInit called.');
+    if (tryLoadPcbModelsData() && pcbModelsData.length > 0) {
+        console.log('[Astro Client] pcbModelsData successfully loaded. Proceeding with mainInit.');
+        mainInit();
+    } else {
+        console.warn('[Astro Client] pcbModelsData not immediately available or empty. Starting polling...');
+        let attempts = 0;
+        const maxAttempts = 15; // Poll for up to 3 seconds (15 * 200ms)
+        const pollInterval = 200;
+
+        const intervalId = setInterval(() => {
+            attempts++;
+            console.log(`[Astro Client] Polling for pcbModelsData, attempt ${attempts}`);
+            if (tryLoadPcbModelsData() && pcbModelsData.length > 0) {
+                clearInterval(intervalId);
+                console.log('[Astro Client] pcbModelsData loaded via polling. Proceeding with mainInit.');
+                mainInit();
+            } else if (attempts >= maxAttempts) {
+                clearInterval(intervalId);
+                console.error('[Astro Client] Failed to load pcbModelsData after multiple attempts. Initialization may fail or be incomplete.');
+                // Optionally, still call mainInit to setup the rest of the UI,
+                // but initThreeJS might fail gracefully or show an error.
+                // Or, display a persistent error message to the user.
+                const pcbContainer = document.getElementById("pcb-3d-render-container");
+                if (pcbContainer) {
+                    pcbContainer.innerHTML = '<p style="color: var(--color-text-primary); padding: 20px; text-align: center;">Failed to load 3D model data. Please try refreshing the page.</p>';
+                }
+                // Fallback: attempt to initialize other parts that don't depend on 3D models
+                populateThumbnails(); // Thumbnails might still be renderable from HTML
+                setupThumbnailControls();
+                updateScrollArrows();
+            }
+        }, pollInterval);
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attemptDataLoadAndInit);
+} else {
+    attemptDataLoadAndInit();
 }

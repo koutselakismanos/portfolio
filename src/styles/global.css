@@ -644,8 +644,12 @@ body {
 
 #loading-indicator {
     color: var(--color-foreground-secondary);
+    text-align: center;
     z-index: 2;
-    position: relative;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     font-size: 0.9rem;
 }
 
