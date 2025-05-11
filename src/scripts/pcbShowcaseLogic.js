@@ -3,6 +3,9 @@ console.log('[Astro Client] pcbShowcaseLogic.js script started');
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
 
 // Get pcbModelsData from the data attribute on the section element
 const pcbShowcaseSection = document.getElementById('pcb-3d-showcase');
@@ -31,7 +34,7 @@ function tryLoadPcbModelsData() {
 }
 
 // --- Global State & Config ---
-let threeScene, camera, renderer, controls, raycaster, mouse;
+let threeScene, camera, renderer, controls, raycaster, mouse, composer, outlinePass;
 let dynamicPointLight, currentLoadedModel, pcbMaterial;
 let pcbContainer,
     loadingIndicator,
@@ -47,37 +50,7 @@ const prefersReducedMotion = window.matchMedia(
 const USE_PLACEHOLDER_PRIMITIVES = false; // Set to false to use GLB files
 const DEBUG_MATERIAL = false; // Flag to use basic material for GLB models
 
-// --- Fresnel Shader ---
-const fresnelVertexShader = `
-  varying vec3 vNormalView;
-  varying vec3 vPositionView;
-  void main() {
-    vec4 positionView = modelViewMatrix * vec4(position, 1.0);
-    vPositionView = positionView.xyz;
-    vNormalView = normalize(normalMatrix * normal);
-    gl_Position = projectionMatrix * positionView;
-  }
-`;
-const fresnelFragmentShader = `
-  uniform vec3 uColor; // Accent color for the glow
-  uniform vec3 uPcbBaseColor; // Base color for the PCB itself
-  uniform float uFresnelBias;
-  uniform float uFresnelScale;
-  uniform float uFresnelPower;
-  varying vec3 vNormalView;
-  varying vec3 vPositionView;
-  void main() {
-    vec3 normal = normalize(vNormalView);
-    vec3 viewDir = normalize(-vPositionView);
-    float fresnelTerm = 1.0 - dot(normal, viewDir);
-    fresnelTerm = pow(fresnelTerm, uFresnelPower);
-    float fresnel = uFresnelBias + uFresnelScale * fresnelTerm;
-    vec3 baseColor = uPcbBaseColor; // Use the dedicated PCB base color
-    vec3 fresnelColor = uColor * fresnel; // Glow is based on the accent color
-    vec3 emissive = fresnelColor * 0.8; // Keep emissive strength, can be tuned
-    gl_FragColor = vec4(baseColor + emissive, 1.0); // Add emissive glow to base color
-  }
-`;
+// Fresnel Shader code removed as per plan
 
 // --- Utility Functions ---
 function throttle(func, limit) {
@@ -137,17 +110,41 @@ function initThreeJS() {
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(pcbContainer.clientWidth, pcbContainer.clientHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
+    // Configure renderer for better visibility
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0; // Adjust as needed
+
     pcbContainer.appendChild(renderer.domElement);
 
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x888888, 1.325); // Further reduced intensity
+    // Initialize EffectComposer and Passes
+    composer = new EffectComposer(renderer);
+    const renderPass = new RenderPass(threeScene, camera);
+    composer.addPass(renderPass);
+
+    outlinePass = new OutlinePass(new THREE.Vector2(pcbContainer.clientWidth, pcbContainer.clientHeight), threeScene, camera);
+    composer.addPass(outlinePass);
+
+    // Configure OutlinePass
+    const accentColor = getComputedStyle(document.documentElement).getPropertyValue("--color-accent-primary").trim() || "#58A6FF";
+    outlinePass.selectedObjects = [];
+    outlinePass.visibleEdgeColor.set(accentColor);
+    outlinePass.hiddenEdgeColor.set(accentColor);
+    outlinePass.edgeStrength = 5;  // Adjust for desired intensity
+    outlinePass.edgeGlow = 1.5;    // Key parameter for glow.
+    outlinePass.edgeThickness = 0.5; // Adjust for desired thickness
+    outlinePass.pulsePeriod = 0;   // 0 for static glow
+
+    // Add Ambient Light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5); // Color, Intensity
+    threeScene.add(ambientLight);
+
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x888888, 1.8); // Increased intensity
     threeScene.add(hemiLight);
-    // const ambientLight = new THREE.AmbientLight(0xffffff, 0.2); // Further reduced intensity
-    // threeScene.add(ambientLight);
     // const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.25); // Further reduced intensity
     // dirLight1.position.set(8, 12, 8);
     // threeScene.add(dirLight1);
 
-    dynamicPointLight = new THREE.PointLight(0xffccaa, 0.15, 150, 1.5); // Further reduced intensity
+    dynamicPointLight = new THREE.PointLight(0xffccaa, 0.5, 150, 2.5); // Increased intensity
     dynamicPointLight.position.set(0, 2, 5);
     threeScene.add(dynamicPointLight);
 
@@ -161,23 +158,14 @@ function initThreeJS() {
     controls.autoRotateSpeed = 0.75;
     controls.target.set(0, 0, 0);
 
-    pcbMaterial = new THREE.ShaderMaterial({
-        uniforms: {
-            uColor: {
-                value: new THREE.Color(
-                    getComputedStyle(document.documentElement)
-                        .getPropertyValue("--color-accent-primary")
-                        .trim() || "#58A6FF",
-                ),
-            },
-            uPcbBaseColor: { value: new THREE.Color(0x004d40) }, // Dark teal as a starting PCB color
-            uFresnelBias: { value: 0.03 },
-            uFresnelScale: { value: 1.3 },
-            uFresnelPower: { value: 3.0 },
-        },
-        vertexShader: fresnelVertexShader,
-        fragmentShader: fresnelFragmentShader,
-        side: THREE.DoubleSide,
+    // New pcbMaterial
+    pcbMaterial = new THREE.MeshStandardMaterial({
+        color: 0x009988, // Brighter base color
+        metalness: 0.3,
+        roughness: 0.5, // Slightly less rough
+        side: THREE.DoubleSide, // Keep if necessary for your models
+        emissive: 0x111111, // Slight emissive component
+        emissiveIntensity: 0.5 // Intensity of the emissive component
     });
 
     if (pcbModelsData && pcbModelsData.length > 0) {
@@ -306,6 +294,10 @@ function loadPCBModel(modelData) {
         threeScene.add(currentLoadedModel);
         currentLoadedModel.userData.sourceKey = modelKey;
 
+        if (outlinePass && currentLoadedModel) { // Add placeholder to outline
+            outlinePass.selectedObjects = [currentLoadedModel];
+        }
+
         camera.position.set(0, 1, 5);
         controls.target.set(0, 0, 0);
         controls.update();
@@ -327,6 +319,11 @@ function loadPCBModel(modelData) {
             (gltf) => {
                 currentLoadedModel = gltf.scene;
                 currentLoadedModel.userData.sourcePath = modelPath; // Store the path used
+
+                if (outlinePass) {
+                    outlinePass.selectedObjects = []; // Clear for new model
+                }
+
                 currentLoadedModel.traverse((child) => {
                     if (child.isMesh) {
                         if (child.name.startsWith("hotspot_")) {
@@ -350,13 +347,16 @@ function loadPCBModel(modelData) {
                             if (DEBUG_MATERIAL && !USE_PLACEHOLDER_PRIMITIVES) {
                                 console.log("[Debug] Using DEBUG MeshStandardMaterial for GLB model");
                                 child.material = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x222222, metalness: 0.1, roughness: 0.7, wireframe: false, side: THREE.DoubleSide });
-                            } else if (!USE_PLACEHOLDER_PRIMITIVES) { // Not debug, not placeholder: APPLY CUSTOM pcbMaterial
-                                console.log(`[Debug] Applying custom pcbMaterial to GLB mesh: ${child.name}`);
-                                child.material = pcbMaterial;
-                            } else { // This case is for USE_PLACEHOLDER_PRIMITIVES = true
-                                child.material = pcbMaterial; // Placeholders also get the Fresnel
+                            } else { // This implies !DEBUG_MATERIAL, and we are in the !USE_PLACEHOLDER_PRIMITIVES block (GLB loading)
+                                // Original GLB material is used by default if not overridden.
+                                // No explicit assignment to child.material is needed here to preserve original materials.
+                                console.log(`[Debug] Using original GLB material for mesh: ${child.name}`);
                             }
                             console.log(`[Debug] Final material for ${child.name}:`, child.material);
+                            if (outlinePass && child.material) { // Add mesh to outline if it has a material
+                                outlinePass.selectedObjects.push(child);
+                                console.log(`[Debug] Added to OutlinePass: ${child.name}`);
+                            }
                         }
                     }
                 });
@@ -413,6 +413,9 @@ function onWindowResize() {
     camera.aspect = newWidth / newHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(newWidth, newHeight);
+    if (composer) {
+        composer.setSize(newWidth, newHeight);
+    }
 }
 
 function onCanvasPointerMove(event) {
@@ -542,8 +545,9 @@ function animateThreeJS() {
         currentLoadedModel.rotation.x += 0.002;
         currentLoadedModel.rotation.y += 0.003;
     }
-    if (renderer && threeScene && camera)
-        renderer.render(threeScene, camera);
+    // if (renderer && threeScene && camera) renderer.render(threeScene, camera); // Old rendering
+    if (composer) composer.render(); // New rendering with post-processing
+
     if (!USE_PLACEHOLDER_PRIMITIVES) updateAnnotations();
 }
 
