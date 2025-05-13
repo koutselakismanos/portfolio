@@ -1,28 +1,31 @@
 ---
 // src/components/Contact.astro
+import { Mail, Github, Linkedin } from "@lucide/astro";
+import type { AstroComponentFactory } from "astro/runtime/server/index.js";
+
 interface ContactLink {
     href: string;
-    icon: string;
+    icon: AstroComponentFactory | any; // Type for an Astro component reference
     text: string;
     target: "_self" | "_blank";
 }
 
 const contactLinks: ContactLink[] = [
     {
-        href: "mailto:youremail@example.com",
-        icon: "outgoing_mail",
-        text: "Email Me",
+        href: "mailto:koutselakismanos@gmail.com",
+        icon: Mail,
+        text: "Email",
         target: "_self",
     },
     {
-        href: "https://github.com/yourusername",
-        icon: "code_blocks",
+        href: "https://github.com/koutselakismanos",
+        icon: Github,
         text: "GitHub",
         target: "_blank",
     },
     {
-        href: "https://linkedin.com/in/yourusername",
-        icon: "corporate_fare",
+        href: "https://www.linkedin.com/in/manos-koutselakis-6b90a6229/",
+        icon: Linkedin,
         text: "LinkedIn",
         target: "_blank",
     },
@@ -51,10 +54,7 @@ const contactLinks: ContactLink[] = [
                                 : undefined
                         }
                     >
-                        <span class="material-symbols-rounded">
-                            {link.icon}
-                        </span>{" "}
-                        {link.text}
+                        <link.icon class="contact-icon" size={24} /> {link.text}
                     </a>
                 ))
             }
@@ -65,4 +65,10 @@ const contactLinks: ContactLink[] = [
 <style>
     /* .contact-methods styles are in global.css */
     /* Add any section-specific styles for #contact if needed */
+    .contact-icon {
+        margin-right: 8px; /* Space between icon and text */
+        vertical-align: middle; /* Aligns icon nicely with text */
+        /* Size and color are passed as props to @lucide/astro components e.g. size={24} color="currentColor" */
+        /* Default stroke is currentColor, so it should match text color unless overridden */
+    }
 </style>

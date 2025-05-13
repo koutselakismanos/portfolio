@@ -1,33 +1,55 @@
 // src/data/projects.js
 export const projectsData = [
+    // Software Projects
     {
-        id: 'project-1',
-        title: 'Smart Environmental Monitor',
-        date: 'Jan 2024 - Present',
-        description: 'An advanced IoT device tracking air quality (PM2.5, VOCs), temperature, and humidity, transmitting data via MQTT to a cloud backend for real-time dashboarding and anomaly detection alerts.',
-        imageBlurSrc: '/images/placeholder-blur.png', // Placeholder
-        imageSrc: '/images/smart-env-monitor.png', // Placeholder
-        link: '#', // Placeholder or actual link
-        techPills: ['ESP32', 'Custom PCB', 'MQTT', 'Python (FastAPI)', 'InfluxDB', 'Grafana']
+        id: 'midimacro-site',
+        title: 'Midimacro.com',
+        shortDescription: 'MIDI software routing and hotkey software.',
+        startDate: '2025-02',
+        endDate: 'Present',
+        images: [
+            { src: '/images/projects/midimacro.png' }
+        ],
+        techPills: ['Electron', 'Astro', 'React'],
+        link: 'https://midimacro.com'
+        // No pcbModelPath
     },
     {
-        id: 'project-2',
-        title: 'Low-Power LoRaWAN Asset Tracker',
-        date: 'Side Project - 2023',
-        description: 'Designed and built a battery-powered asset tracker using LoRaWAN for long-range communication, focusing on ultra-low power consumption for multi-year battery life. Includes GPS and accelerometer.',
-        imageBlurSrc: '/images/placeholder-blur.png', // Placeholder
-        imageSrc: '/images/asset-tracker-pcb.png', // Placeholder
-        link: '#', // Placeholder or actual link
-        techPills: ['STM32L0', 'LoRaWAN', 'GPS', 'C (Firmware)', 'Power Management']
+        id: 'fretvisualizer-site',
+        title: 'FretVisualizer.com',
+        shortDescription: 'Visualize your fretted instrument.',
+        startDate: '2025-02',
+        endDate: 'Present',
+        images: [
+            { src: '/images/projects/fretvisualizer.png' }
+        ],
+        techPills: ['Astro', 'React'],
+        link: 'https://fretvisualizer.com'
+        // No pcbModelPath
     },
     {
-        id: 'project-3',
-        title: 'Open Source Home Automation Hub',
-        date: 'Ongoing Contribution',
-        description: 'Contributing to an open-source home automation platform by developing new device integrations (Zigbee/Z-Wave via MQTT) and enhancing the core API for better extensibility.',
-        imageBlurSrc: '/images/placeholder-blur.png', // Placeholder
-        imageSrc: '/images/home-automation-ui.png', // Placeholder
-        link: '#', // Placeholder or actual link
-        techPills: ['Python', 'Docker', 'Node.js', 'Vue.js', 'API Design']
+        id: 'footcontroller-x6',
+        title: 'FootController_X6',
+        shortDescription: 'Customizable 6-switch USB MIDI footswitch controller.',
+        startDate: '2024-12',
+        // endDate: 'YYYY-MM',
+        // images: [
+        //     { src: '/images/placeholders/pcb-project.png', blurSrc: '/images/placeholders/pcb-project-blur.png', alt: 'FootController X6 placeholder image' }
+        // ],
+        techPills: ['ESP32', 'MIDI', 'PCB Design'],
+        link: 'https://github.com/koutselakismanos/FootController_X6',
+        pcbModelPath: '/assets/models/FootController_X6.glb' // From original data
+    },
+    {
+        id: 'quadmix-preamp',
+        title: 'QuadMix Preamp',
+        shortDescription: 'QuadMix Preamp is a 4-channel mixer preamp.',
+        startDate: '2025-01',
+        endDate: 'Present',
+        // images: [
+        //     { src: '/images/placeholders/pcb-project.png', blurSrc: '/images/placeholders/pcb-project-blur.png', alt: 'PickupMixer placeholder image' }
+        // ],
+        techPills: ['Audio Electronics', 'PCB Design'],
+        pcbModelPath: '/assets/models/PickupMixer.glb'
     }
 ];

@@ -1,51 +1,85 @@
 ---
 // src/components/ProjectCard.astro
+export interface ImageProps {
+    src: string;
+    blurSrc?: string;
+    alt: string;
+}
+
 export interface Props {
     title: string;
-    date: string;
-    description: string;
-    imageSrc: string;
-    imageBlurSrc: string;
-    link: string;
+    startDate: string;
+    endDate?: string | null;
+    shortDescription: string;
+    images: ImageProps[];
+    link?: string | null;
     techPills: string[];
     animationOrder?: number;
 }
 
 const {
     title,
-    date,
-    description,
-    imageSrc,
-    imageBlurSrc,
+    startDate,
+    endDate,
+    shortDescription,
+    images,
     link,
     techPills,
     animationOrder = 0,
 } = Astro.props;
+
+const displayImage =
+    images && images.length > 0
+        ? images[0]
+        : {
+              src: "/images/placeholders/generic-placeholder.png",
+              alt: "Placeholder image",
+          };
+const displayBlurImage = displayImage.blurSrc || displayImage.src;
 ---
 
 <div class="project-card" style={`--animation-order-child: ${animationOrder};`}>
     <div class="project-card-image-wrapper">
         <img
             loading="lazy"
-            src={imageBlurSrc}
-            alt={`Blurred background for ${title}`}
+            src={displayBlurImage}
+            alt={displayImage.alt
+                ? `Blurred background for ${displayImage.alt}`
+                : `Blurred background for ${title}`}
             class="project-card-image-blur"
         />
         <img
             loading="lazy"
-            src={imageSrc}
-            alt={`${title} Image`}
+            src={displayImage.src}
+            alt={displayImage.alt || `${title} Image`}
             class="project-card-image-main"
         />
     </div>
     <div class="project-card-content">
         <h3>
-            <a href={link} target="_blank" rel="noopener noreferrer">{title}</a>
+            {
+                link ? (
+                    <a href={link} target="_blank" rel="noopener noreferrer">
+                        {title}
+                    </a>
+                ) : (
+                    title
+                )
+            }
         </h3>
-        <div class="project-date">{date}</div>
-        <p class="project-description">{description}</p>
+        <div class="project-date">
+            {startDate}
+            {endDate && endDate !== "Present" && ` - ${endDate}`}
+            {endDate === "Present" && ` - Present`}
+        </div>
+        <p class="project-description">{shortDescription}</p>
         <div class="tech-pills">
-            {techPills.map((pill) => <span class="tech-pill">{pill}</span>)}
+            {
+                techPills &&
+                    techPills.map((pill) => (
+                        <span class="tech-pill">{pill}</span>
+                    ))
+            }
         </div>
     </div>
 </div>

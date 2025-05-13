@@ -1,25 +1,28 @@
 ---
 // src/components/Projects.astro
 import { projectsData } from "../data/projects.js";
-import ProjectCard from "./ProjectCard.astro"; // We'll create this next
+import ProjectCard from "./ProjectCard.astro";
+
+const softwareProjects = projectsData.filter(
+    (project) => !project.pcbModelPath,
+);
 ---
 
 <section id="projects" class="content-section">
     <div class="container">
         <h2 class="animated-on-scroll">Featured Projects & Endeavors</h2>
         <p class="animated-on-scroll">
-            A selection of projects that demonstrate my skills in IoT, software
-            development, and hardware design.
+            A selection of fun projects I am working on.
         </p>
         <div class="projects-grid stagger-children">
             {
-                projectsData.map((project, index) => (
+                softwareProjects.map((project, index) => (
                     <ProjectCard
                         title={project.title}
-                        date={project.date}
-                        description={project.description}
-                        imageSrc={project.imageSrc}
-                        imageBlurSrc={project.imageBlurSrc}
+                        startDate={project.startDate}
+                        endDate={project.endDate}
+                        shortDescription={project.shortDescription}
+                        images={project.images}
                         link={project.link}
                         techPills={project.techPills}
                         animationOrder={index}

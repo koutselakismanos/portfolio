@@ -199,6 +199,25 @@ function loadPCBModel(modelData) {
     }
     const modelKey = modelData.key;
 
+    // Update dynamic description
+    const descriptionElement = document.getElementById('pcb-dynamic-description');
+    if (descriptionElement) {
+        descriptionElement.textContent = modelData.shortDescription || 'Select a model to see its description.';
+    }
+
+    // Update dynamic link
+    const linkElement = document.getElementById('pcb-dynamic-link');
+    const linkWrapper = linkElement ? linkElement.parentElement : null;
+
+    if (linkElement && linkWrapper) {
+        if (modelData.githubUrl) {
+            linkElement.href = modelData.githubUrl;
+            linkWrapper.style.display = 'block'; // Or remove a 'hidden' class
+        } else {
+            linkWrapper.style.display = 'none'; // Or add a 'hidden' class
+        }
+    }
+
     if (currentLoadedModel) {
         threeScene.remove(currentLoadedModel);
         if (currentLoadedModel.geometry)
