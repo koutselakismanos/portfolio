@@ -8,7 +8,7 @@ export const projectsData = [
         startDate: '2025-02',
         endDate: 'Present',
         images: [
-            { src: '/images/projects/midimacro.png' }
+            { src: '/images/projects/midimacro.png', alt: 'Midimacro.com project screenshot' }
         ],
         techPills: ['Electron', 'Astro', 'React'],
         link: 'https://midimacro.com'
@@ -21,7 +21,7 @@ export const projectsData = [
         startDate: '2025-02',
         endDate: 'Present',
         images: [
-            { src: '/images/projects/fretvisualizer.png' }
+            { src: '/images/projects/fretvisualizer.png', alt: 'FretVisualizer.com project screenshot' }
         ],
         techPills: ['Astro', 'React'],
         link: 'https://fretvisualizer.com'
