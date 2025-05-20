@@ -8,7 +8,7 @@ export const projectsData = [
         startDate: '2025-02',
         endDate: 'Present',
         images: [
-            { src: '/images/projects/midimacro.png', alt: 'Midimacro.com project screenshot' }
+            { src: '/portfolio/images/projects/midimacro.png', alt: 'Midimacro.com project screenshot' }
         ],
         techPills: ['Electron', 'Astro', 'React'],
         link: 'https://midimacro.com'
@@ -21,7 +21,7 @@ export const projectsData = [
         startDate: '2025-02',
         endDate: 'Present',
         images: [
-            { src: '/images/projects/fretvisualizer.png', alt: 'FretVisualizer.com project screenshot' }
+            { src: '/portfolio/images/projects/fretvisualizer.png', alt: 'FretVisualizer.com project screenshot' }
         ],
         techPills: ['Astro', 'React'],
         link: 'https://fretvisualizer.com'
@@ -38,7 +38,7 @@ export const projectsData = [
         // ],
         techPills: ['ESP32', 'MIDI', 'PCB Design'],
         link: 'https://github.com/koutselakismanos/FootController_X6',
-        pcbModelPath: '/assets/models/FootController_X6.glb' // From original data
+        pcbModelPath: '/portfolio/assets/models/FootController_X6.glb' // From original data
     },
     {
         id: 'quadmix-preamp',
@@ -50,6 +50,6 @@ export const projectsData = [
         //     { src: '/images/placeholders/pcb-project.png', blurSrc: '/images/placeholders/pcb-project-blur.png', alt: 'PickupMixer placeholder image' }
         // ],
         techPills: ['Audio Electronics', 'PCB Design'],
-        pcbModelPath: '/assets/models/PickupMixer.glb'
+        pcbModelPath: '/portfolio/assets/models/PickupMixer.glb'
     }
 ];
