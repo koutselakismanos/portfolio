@@ -1,0 +1,284 @@
+---
+// src/components/PcbShowcaseDisplay.astro
+import { projectsData } from "../data/projects.js"; // Import projectsData
+
+// Interface for PcbModelForShowcase
+interface PcbModelForShowcase {
+    key: string;
+    name: string;
+    modelPath: string;
+    thumbnailUrl: string;
+    githubUrl?: string;
+    shortDescription?: string;
+}
+
+// Filter and transform projectsData for the PCB showcase
+const pcbModelsForShowcase: PcbModelForShowcase[] = projectsData
+    .filter((project) => project.pcbModelPath)
+    .map((project) => ({
+        key: project.id,
+        name: project.title,
+        modelPath: project.pcbModelPath!,
+        thumbnailUrl:
+            project.images && project.images.length > 0 && project.images[0].src
+                ? project.images[0].src
+                : "/images/placeholders/pcb-project-thumb.png",
+        githubUrl: project.link || undefined,
+        shortDescription: project.shortDescription || "",
+    }));
+
+const pcbModelsDataJson = JSON.stringify(pcbModelsForShowcase);
+---
+
+<section id="pcb-showcase" class="pcb-showcase-section content-section" data-pcb-models={pcbModelsDataJson}>
+    <div class="pcb-showcase-container">
+        <div class="pcb-showcase-area"> {/* Renamed from hero-pcb-showcase-area for clarity */}
+            <div id="pcb-3d-render-container">
+                <div id="loading-indicator">Loading 3D Model...</div>
+                {/* Canvas for Three.js will be appended here by script */}
+
+                <div class="pcb-thumbnail-selector-wrapper overlay-top"> {/* Renamed from hero-overlay-top */}
+                    <div class="pcb-thumbnail-selector">
+                        {pcbModelsForShowcase.map((model, index) => (
+                            <div
+                                class="pcb-thumbnail-item"
+                                data-model-key={model.key}
+                                style={`--animation-order-child: ${index};`}
+                            >
+                                {model.thumbnailUrl && model.thumbnailUrl !== "/images/placeholders/pcb-project-thumb.png" ? (
+                                    <img src={model.thumbnailUrl} alt={model.name} loading="lazy" />
+                                ) : (
+                                    <div class="placeholder-thumb-visual" style={`background-color: var(--color-surface-200); color: var(--color-foreground-secondary);`}>
+                                        {model.name.substring(0, 1).toUpperCase()}
+                                    </div>
+                                )}
+                                <span>{model.name}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div class="artifact-description overlay-bottom-left stagger-children"> {/* Renamed from hero-overlay-bottom-left */}
+                    <p id="pcb-dynamic-description" class="model-specific-description">
+                        Select a model above to see its description.
+                    </p>
+                    <p class="pcb-project-link-wrapper" style="display: none; margin-top: var(--spacing-s);">
+                        <a id="pcb-dynamic-link" href="#" target="_blank" rel="noopener noreferrer" class="button-primary">
+                            View Project Details
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="../scripts/pcbShowcaseLogic.js"></script>
+
+<style>
+    .pcb-showcase-section {
+        padding-top: var(--spacing-xl);
+        padding-bottom: var(--spacing-xl);
+        background-color: var(--color-surface-alt); /* A slightly different background */
+        /* overflow: hidden; */ /* Consider if needed for effects */
+    }
+
+    .pcb-showcase-container {
+        width: 90%;
+        max-width: 1200px; /* Adjust as needed */
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+    }
+
+    .pcb-showcase-area {
+        position: relative;
+        min-height: 500px; 
+        height: 60vh; /* Example: make it viewport height dependent */
+        max-height: 700px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--color-background); /* Background for the showcase area itself */
+        border-radius: var(--border-radius-xlarge);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+
+    #pcb-3d-render-container {
+        width: 100%;
+        height: 100%;
+        border-radius: var(--border-radius-xlarge); /* Match parent */
+        position: relative;
+        overflow: hidden; 
+    }
+    
+    #loading-indicator {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: var(--color-foreground-secondary);
+        font-size: var(--font-size-lg);
+    }
+
+    /* --- Overlays --- */
+    .overlay-top { /* For thumbnails */
+        position: absolute;
+        top: var(--spacing-md);
+        left: 50%;
+        transform: translateX(-50%);
+        width: auto;
+        max-width: calc(100% - var(--spacing-lg));
+        z-index: 3; /* Ensure overlays are above the 3D render */
+        display: flex;
+        justify-content: center;
+    }
+    
+    .pcb-thumbnail-selector-wrapper {
+        /* Styles for this wrapper, if any are specific beyond .overlay-top */
+        /* Copied from global.css related styles or PcbShowcase.astro specific styles if they existed */
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-xs);
+        background-color: color-mix(in srgb, var(--color-surface-100) 80%, transparent);
+        backdrop-filter: blur(8px);
+        border-radius: var(--border-radius-large);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .pcb-thumbnail-selector {
+        display: flex;
+        gap: var(--spacing-sm);
+        overflow-x: auto; /* Allow horizontal scrolling if many items */
+        padding: var(--spacing-xs);
+        scrollbar-width: thin; /* For Firefox */
+        scrollbar-color: var(--color-surface-300) var(--color-surface-100); /* For Firefox */
+    }
+
+    .pcb-thumbnail-selector::-webkit-scrollbar { /* For Chrome, Safari, Edge */
+        height: 8px;
+    }
+
+    .pcb-thumbnail-selector::-webkit-scrollbar-track {
+        background: var(--color-surface-100);
+        border-radius: 4px;
+    }
+
+    .pcb-thumbnail-selector::-webkit-scrollbar-thumb {
+        background-color: var(--color-surface-300);
+        border-radius: 4px;
+    }
+    
+    .pcb-thumbnail-item {
+        /* Copied from global.css or PcbShowcase.astro specific styles */
+        border: 2px solid transparent;
+        border-radius: var(--border-radius-base);
+        padding: var(--spacing-xs);
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        background-color: var(--color-surface-200);
+        min-width: 100px; /* Ensure items have a decent width */
+        opacity: 0.8;
+    }
+
+    .pcb-thumbnail-item:hover,
+    .pcb-thumbnail-item.active { /* .active class to be added by JS */
+        border-color: var(--color-accent-primary);
+        background-color: var(--color-surface-300);
+        transform: translateY(-2px);
+        opacity: 1;
+    }
+
+    .pcb-thumbnail-item img {
+        width: 100%;
+        height: 60px; /* Adjust as needed */
+        object-fit: cover;
+        border-radius: calc(var(--border-radius-base) - 2px);
+        margin-bottom: var(--spacing-xs);
+    }
+    
+    .pcb-thumbnail-item .placeholder-thumb-visual {
+        width: 100%;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem; /* Adjusted */
+        font-weight: bold;
+        border-radius: calc(var(--border-radius-base) - 2px);
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .pcb-thumbnail-item span {
+        display: block;
+        font-size: 0.7rem; /* Smaller text */
+        color: var(--color-foreground-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100px; /* Ensure it doesn't stretch parent too much */
+    }
+    .pcb-thumbnail-item.active span {
+        color: var(--color-foreground-primary);
+        font-weight: var(--font-weight-medium);
+    }
+
+
+    .overlay-bottom-left { /* For Description */
+        position: absolute;
+        bottom: var(--spacing-md);
+        left: var(--spacing-md);
+        z-index: 3;
+        width: calc(60% - var(--spacing-lg)); /* Adjusted width */
+        max-width: 450px;
+    }
+
+    .pcb-showcase-area .artifact-description { 
+        background-color: color-mix(in srgb, var(--color-surface-100) 85%, transparent); 
+        backdrop-filter: blur(8px);
+        padding: var(--spacing-md); 
+        border-radius: var(--border-radius-base);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
+    }
+    .pcb-showcase-area .artifact-description p {
+        font-size: 0.9rem; /* Adjusted */
+        margin-bottom: var(--spacing-xs);
+        color: var(--color-foreground-secondary);
+        line-height: 1.5; 
+    }
+    .pcb-showcase-area .artifact-description p#pcb-dynamic-description {
+         color: var(--color-foreground-primary);
+         font-weight: var(--font-weight-medium);
+         margin-bottom: var(--spacing-sm); 
+    }
+    .pcb-showcase-area .artifact-description .button-primary { /* Style for button inside description */
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 0.8rem; /* Adjusted */
+        display: inline-block;
+    }
+
+    /* Responsive adjustments if necessary */
+    @media (max-width: 768px) {
+        .pcb-showcase-area {
+            height: 50vh;
+            min-height: 400px;
+        }
+        .overlay-bottom-left {
+            width: calc(90% - var(--spacing-lg));
+            max-width: none;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: var(--spacing-sm);
+            text-align: center;
+        }
+         .pcb-showcase-area .artifact-description {
+            padding: var(--spacing-sm);
+        }
+        .pcb-showcase-area .artifact-description p {
+            font-size: 0.85rem;
+        }
+    }
+
+</style> 

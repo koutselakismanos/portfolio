@@ -3,12 +3,15 @@ console.log('[Astro Client] pcbShowcaseLogic.js script started');
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
 
 // Get pcbModelsData from the data attribute on the section element
-const pcbShowcaseSection = document.getElementById('pcb-3d-showcase');
+// Try to get data from the section that's now part of the Hero, typically id="about"
+// Fallback to 'pcb-3d-showcase' if it exists elsewhere (for safety, though unlikely now)
+const pcbShowcaseSection = document.getElementById('pcb-showcase') || document.getElementById('about');
 let pcbModelsData = [];
 
 function tryLoadPcbModelsData() {
@@ -49,6 +52,7 @@ const prefersReducedMotion = window.matchMedia(
 ).matches;
 const USE_PLACEHOLDER_PRIMITIVES = false; // Set to false to use GLB files
 const DEBUG_MATERIAL = false; // Flag to use basic material for GLB models
+let gltfLoader; // Declare GLTFLoader globally within this script
 
 // Fresnel Shader code removed as per plan
 
@@ -101,6 +105,13 @@ function initThreeJS() {
     threeScene = new THREE.Scene();
     raycaster = new THREE.Raycaster();
     mouse = new THREE.Vector2();
+
+    // Initialize GLTFLoader and DRACOLoader
+    gltfLoader = new GLTFLoader();
+    const dracoLoader = new DRACOLoader();
+    // Adjust the path if your draco decoder files are elsewhere in your public directory
+    dracoLoader.setDecoderPath('/draco/'); 
+    gltfLoader.setDRACOLoader(dracoLoader);
 
     const aspect = pcbContainer.clientWidth / pcbContainer.clientHeight;
     camera = new THREE.PerspectiveCamera(50, aspect, 0.1, 2000);
@@ -332,8 +343,7 @@ function loadPCBModel(modelData) {
                 loadingIndicator.textContent = "Model path error.";
             return;
         }
-        const loader = new GLTFLoader();
-        loader.load(
+        gltfLoader.load(
             modelPath,
             (gltf) => {
                 currentLoadedModel = gltf.scene;

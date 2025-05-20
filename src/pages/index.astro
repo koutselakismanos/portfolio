@@ -4,7 +4,7 @@ import MainLayout from "../layouts/MainLayout.astro";
 
 import Header from "../components/Header.astro";
 import Hero from "../components/Hero.astro";
-import PcbShowcase from "../components/PcbShowcase.astro";
+import PcbShowcaseDisplay from "../components/PcbShowcaseDisplay.astro";
 // import Skills from "../components/Skills.astro"; // Removed Skills import
 import Projects from "../components/Projects.astro";
 import Contact from "../components/Contact.astro";
@@ -13,15 +13,14 @@ import Footer from "../components/Footer.astro";
 ---
 
 <MainLayout
-    title="Your Name - Portfolio"
+    title="Koutselakis Manos - Portfolio"
     description="Software Developer specializing in IoT solutions and innovative projects."
 >
     <Header />
     <main class="main-content-area">
         <Hero />
-        <PcbShowcase />
+        <PcbShowcaseDisplay />
         {/* <Skills /> */}
-        {/* Removed Skills component */}
         <Projects />
         <Contact />
     </main>

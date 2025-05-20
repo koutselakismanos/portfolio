@@ -1,79 +1,179 @@
 ---
 // src/components/Hero.astro
-// Placeholder for name, can be made a prop or come from a global data store
+// import { projectsData } from "../data/projects.js"; // Not needed if PCB showcase is removed
+
+// Placeholder for name
 const yourName = "Koutselakis Manos";
+
+// Interface for PcbModelForShowcase (copied from PcbShowcase.astro)
+// interface PcbModelForShowcase {
+//     key: string;
+//     name: string;
+//     modelPath: string;
+//     thumbnailUrl: string;
+//     githubUrl?: string;
+//     shortDescription?: string;
+// }
+
+// Filter and transform projectsData for the PCB showcase (copied from PcbShowcase.astro)
+// const pcbModelsForShowcase: PcbModelForShowcase[] = projectsData
+//     .filter((project) => project.pcbModelPath)
+//     .map((project) => ({
+//         key: project.id,
+//         name: project.title,
+//         modelPath: project.pcbModelPath!,
+//         thumbnailUrl:
+//             project.images && project.images.length > 0 && project.images[0].src
+//                 ? project.images[0].src
+//                 : "/images/placeholders/pcb-project-thumb.png",
+//         githubUrl: project.link || undefined,
+//         shortDescription: project.shortDescription || "",
+//     }));
+
+// const pcbModelsDataJson = JSON.stringify(pcbModelsForShowcase);
+
+// Use the refined Hero Text
+const heroHeadline = `${yourName}: Crafting Innovative Tech Solutions & Engaging Digital Experiences.`;
+const heroSubtitle = "I leverage cutting-edge technologies to build impactful IoT devices, dynamic web applications, and intuitive user experiences. Let's bring your vision to life.";
+
 ---
 
 <section id="about" class="hero-section content-section">
-    <div class="container stagger-children">
-        <h1>Hi, I'm {yourName}</h1>
-        <p class="subtitle">
-            I build useful (and cool) tech. Explore my work below.
-        </p>
-        <div class="hero-actions">
-            <a href="#projects" class="button-primary">View My Work</a>
-            <a href="#contact" class="button-secondary">Get In Touch</a>
+    <div class="hero-container-text-centric">
+        <div class="hero-content stagger-children">
+            <h1>{heroHeadline}</h1>
+            <p class="subtitle">
+                {heroSubtitle}
+            </p>
+            <div class="hero-actions">
+                <a href="#projects" class="button-primary">View My Work</a>
+                <a href="#contact" class="button-text">Get In Touch</a>
+            </div>
         </div>
+
+        <!-- 
+        HERO PCB SHOWCASE AREA - COMMENTED OUT FOR MINIMALISTIC REDESIGN 
+        The following section related to the PCB showcase has been commented out.
+        To re-enable, uncomment the HTML block and the corresponding script tag below.
+        Also, re-introduce the pcbModelsForShowcase data and related logic in the frontmatter.
+
+        <div class="hero-pcb-showcase-area">
+            ...
+        </div>
+        -->
     </div>
 </section>
 
-<!-- Scoped CSS for Hero.astro can be added here if needed -->
-<!-- Most styles are currently global in src/styles/global.css -->
+<!-- <script src="../scripts/pcbShowcaseLogic.js"></script> -->
+
 <style>
     .hero-section {
-        position: relative; /* Ensure child elements can be positioned above the pseudo-element if needed */
-        overflow: hidden; /* Keep the gradient contained */
-        /* background-color: var(--color-background); Fallback, though already set globally */
+        position: relative;
+        min-height: 70vh;
+        padding-top: calc(var(--spacing-xl) * 2);
+        padding-bottom: calc(var(--spacing-xl) * 2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: var(--color-background);
     }
 
-    .hero-section::before {
+    /* 
+    The ::before pseudo-element for the gradient background is commented out.
+    .hero-section::before { 
         content: "";
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: -1; /* Place the gradient behind the content */
-        background: linear-gradient(
-            135deg,
-            color-mix(
-                in srgb,
-                var(--color-accent-primary) 20%,
-                transparent 80%
-            ),
-            color-mix(in srgb, var(--color-background) 50%, transparent 90%),
-            color-mix(
-                in srgb,
-                var(--color-accent-secondary) 20%,
-                transparent 80%
-            )
+        top: 0; left: 0; right: 0; bottom: 0;
+        z-index: 0; 
+        background: linear-gradient(135deg,
+            color-mix(in srgb, var(--color-accent-primary) 15%, transparent 70%),
+            color-mix(in srgb, var(--color-background) 40%, transparent 80%),
+            color-mix(in srgb, var(--color-accent-secondary) 10%, transparent 70%)
         );
-        background-size: 400% 400%; /* Make the gradient large for smooth animation */
+        background-size: 300% 300%;
         animation: futuristicGradient 25s ease infinite;
     }
 
-    .hero-section > .container {
-        position: relative; /* Ensure content is above the ::before pseudo-element */
+    @keyframes futuristicGradient { 
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .hero-section::before { animation-play-state: paused; }
+    }
+    */
+
+    .hero-container-text-centric {
+        width: 90%;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
         z-index: 1;
     }
 
-    @keyframes futuristicGradient {
-        0% {
-            background-position: 0% 50%;
-        }
-        50% {
-            background-position: 100% 50%;
-        }
-        100% {
-            background-position: 0% 50%;
-        }
+    .hero-content {
+        position: relative;
+        z-index: 2;
     }
 
-    @media (prefers-reduced-motion: reduce) {
-        .hero-section::before {
-            animation-play-state: paused;
-        }
+    .hero-content h1 {
+        font-size: 3.2rem;
+        line-height: 1.15;
+        margin-bottom: var(--spacing-lg);
+        color: var(--color-foreground-primary);
+        font-weight: 700;
     }
 
-    /* Add any other hero-specific styles here if they are not covered by global.css */
+    .hero-content .subtitle {
+        font-size: 1.2rem;
+        margin-bottom: var(--spacing-xl);
+        color: var(--color-foreground-secondary);
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero-actions {
+        margin-top: var(--spacing-xl);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+
+    .button-primary {
+        background-color: var(--color-accent-primary);
+        color: var(--color-background-on-accent);
+        padding: var(--spacing-sm) var(--spacing-lg);
+        border-radius: var(--border-radius-base);
+        text-decoration: none;
+        font-weight: var(--font-weight-medium);
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        border: 1px solid transparent;
+    }
+
+    .button-primary:hover {
+        background-color: color-mix(in srgb, var(--color-accent-primary) 85%, black);
+        transform: translateY(-2px);
+    }
+
+    .button-text {
+        background-color: transparent;
+        color: var(--color-accent-primary);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--border-radius-base);
+        text-decoration: none;
+        font-weight: var(--font-weight-medium);
+        transition: color 0.3s ease, background-color 0.3s ease;
+        border: 1px solid transparent;
+    }
+
+    .button-text:hover {
+        color: color-mix(in srgb, var(--color-accent-primary) 80%, white);
+        background-color: color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+    }
+
 </style>
